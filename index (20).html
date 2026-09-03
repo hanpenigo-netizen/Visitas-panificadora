@@ -1,0 +1,1140 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+  :root{
+    --cream:#FAF3E7;
+    --paper:#FFFFFF;
+    --crust:#5B3A21;
+    --ink:#2E241A;
+    --ink-soft:#6B5D4E;
+    --wheat:#C98A2C;
+    --wheat-soft:#F2DDB2;
+    --burgundy:#8C3B34;
+    --burgundy-soft:#F3DEDB;
+    --sage:#5E7C4F;
+    --sage-soft:#DEE8D6;
+    --line:#E4D6BE;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;}
+  .app{
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    min-height:100%;
+    padding:20px 16px 60px;
+    max-width:520px;
+    margin:0 auto;
+  }
+  .brandrow{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:4px;}
+  h1{font-family:'Fraunces',serif; font-weight:700; font-size:26px; color:var(--crust); margin:0; letter-spacing:-0.01em;}
+  .eyebrow{font-size:11px; text-transform:uppercase; letter-spacing:0.12em; color:var(--wheat); font-weight:600; margin-bottom:6px;}
+  .sub{font-size:13px; color:var(--ink-soft); margin:0 0 20px;}
+
+  .tabs{display:flex; background:var(--wheat-soft); border-radius:999px; padding:4px; margin-bottom:22px; gap:4px;}
+  .tab{flex:1; text-align:center; padding:10px 8px; border-radius:999px; font-size:13px; font-weight:600; color:var(--crust); cursor:pointer; transition:background .18s ease, color .18s ease; user-select:none;}
+  .tab.active{background:var(--crust); color:#fff;}
+
+  .card{background:var(--paper); border-radius:var(--radius); border:1px solid var(--line); padding:18px 16px; margin-bottom:14px; position:relative;}
+  .card::before{content:''; position:absolute; left:14px; right:14px; top:0; height:0; border-top:1px dashed var(--line);}
+  .card-title{font-family:'Fraunces',serif; font-weight:600; font-size:15px; color:var(--crust); margin:0 0 4px;}
+  .card-hint{font-size:11.5px; color:var(--ink-soft); margin:0 0 12px;}
+
+  label{display:block; font-size:12px; font-weight:600; color:var(--ink-soft); margin:12px 0 5px;}
+  label:first-of-type{margin-top:0;}
+  input[type=text], input[type=number], select, textarea{
+    width:100%; padding:10px 12px; border-radius:10px; border:1.5px solid var(--line);
+    background:var(--cream); font-family:'Inter',sans-serif; font-size:14px; color:var(--ink);
+  }
+  input:focus, select:focus, textarea:focus{outline:2px solid var(--wheat); outline-offset:1px; background:#fff;}
+  textarea{resize:vertical; min-height:60px;}
+
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+
+  .segbtns{display:flex; gap:8px; flex-wrap:wrap;}
+  .segbtn{flex:1; min-width:70px; text-align:center; padding:9px 6px; border-radius:10px; border:1.5px solid var(--line); background:var(--cream); font-size:12.5px; font-weight:600; color:var(--ink-soft); cursor:pointer; transition:.15s ease;}
+  .segbtn.on-good{background:var(--sage-soft); border-color:var(--sage); color:var(--sage);}
+  .segbtn.on-mid{background:var(--wheat-soft); border-color:var(--wheat); color:var(--wheat);}
+  .segbtn.on-bad{background:var(--burgundy-soft); border-color:var(--burgundy); color:var(--burgundy);}
+
+  .pctpreview{margin-top:10px; font-size:12px; color:var(--ink-soft);}
+  .pctpreview b{color:var(--crust); font-size:14px;}
+
+  .moneywrap{position:relative;}
+  .moneywrap .moneypre{position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--ink-soft); font-weight:600; font-size:14px; pointer-events:none;}
+  .moneywrap input{padding-left:24px;}
+
+  .locbtn{
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    width:100%; padding:10px; margin-top:8px;
+    border:1.5px dashed var(--wheat); border-radius:10px;
+    background:var(--wheat-soft); color:var(--crust);
+    font-size:13px; font-weight:600; cursor:pointer;
+  }
+  .locresult{margin-top:8px; font-size:12px; color:var(--sage); display:none;}
+  .locresult.show{display:block;}
+  .locresult a{color:var(--crust);}
+
+  .photogrid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .photoslot{
+    border:1.5px dashed var(--line); border-radius:12px; background:var(--cream);
+    text-align:center; padding:10px; position:relative; overflow:hidden; min-height:96px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+  .photoslot input{position:absolute; inset:0; opacity:0; cursor:pointer;}
+  .photoslot img{width:100%; height:76px; object-fit:cover; border-radius:8px;}
+  .photoslot .lbl{font-size:11px; color:var(--ink-soft); margin-top:4px; font-weight:600;}
+  .photoslot .plus{font-size:20px; color:var(--wheat);}
+  .photoslot.filled{border-style:solid; border-color:var(--sage);}
+
+  .submitbar{position:sticky; bottom:0; margin-top:10px;}
+  button.primary{width:100%; padding:14px; border:none; border-radius:12px; background:var(--crust); color:#fff; font-family:'Inter',sans-serif; font-weight:700; font-size:15px; cursor:pointer; box-shadow:0 4px 14px rgba(91,58,33,.25);}
+  button.primary:disabled{opacity:.6; cursor:default;}
+  button.primary:active{transform:translateY(1px);}
+
+  .stampwrap{position:fixed; inset:0; background:rgba(46,36,26,.45); display:flex; align-items:center; justify-content:center; z-index:50; opacity:0; pointer-events:none; transition:opacity .2s ease;}
+  .stampwrap.show{opacity:1; pointer-events:auto;}
+  .stamp{width:168px; height:168px; border-radius:50%; border:5px solid var(--burgundy); color:var(--burgundy); display:flex; align-items:center; justify-content:center; flex-direction:column; font-family:'Fraunces',serif; font-weight:700; background:#fff9f2; transform:scale(.4) rotate(-14deg); transition:transform .35s cubic-bezier(.2,1.6,.4,1);}
+  .stampwrap.show .stamp{transform:scale(1) rotate(-10deg);}
+  .stamp span.big{font-size:15px; letter-spacing:.02em;}
+  .stamp span.small{font-family:'Inter',sans-serif; font-weight:600; font-size:10px; margin-top:4px; letter-spacing:.08em; text-transform:uppercase;}
+
+  .statgrid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;}
+  .stat{background:var(--paper); border:1px solid var(--line); border-radius:var(--radius); padding:14px;}
+  .stat .num{font-family:'Fraunces',serif; font-weight:700; font-size:24px; color:var(--crust);}
+  .stat .lbl{font-size:11px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.06em; margin-top:2px;}
+
+  .rowcard{display:flex; justify-content:space-between; align-items:center; background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:8px;}
+  .rowcard .name{font-weight:600; font-size:14px; color:var(--ink);}
+  .rowcard .meta{font-size:11px; color:var(--ink-soft); margin-top:2px;}
+  .pill{font-size:12px; font-weight:700; padding:4px 10px; border-radius:999px;}
+  .pill.good{background:var(--sage-soft); color:var(--sage);}
+  .pill.mid{background:var(--wheat-soft); color:var(--wheat);}
+  .pill.bad{background:var(--burgundy-soft); color:var(--burgundy);}
+  .chiprow{display:flex; gap:8px; overflow-x:auto; padding-bottom:2px; margin-bottom:14px;}
+  .chip{flex:0 0 auto; padding:7px 13px; border-radius:999px; border:1.5px solid var(--line); background:var(--paper); font-size:12.5px; font-weight:600; color:var(--ink-soft); cursor:pointer; white-space:nowrap;}
+  .chip.active{background:var(--wheat); border-color:var(--wheat); color:#fff;}
+  .chipselect{flex:0 0 auto; padding:7px 26px 7px 13px; border-radius:999px; border:1.5px solid var(--line); background:var(--paper); font-size:12.5px; font-weight:600; color:var(--ink-soft); appearance:none; -webkit-appearance:none;}
+  .medal{width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0;}
+  .medal.gold{background:var(--wheat); color:#fff;}
+  .medal.silver{background:#C7C2B8; color:#fff;}
+  .medal.low{background:var(--burgundy-soft); color:var(--burgundy);}
+  .medal.mid{background:var(--cream); color:var(--ink-soft); border:1px solid var(--line);}
+  .alertrow{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; padding:9px 0; border-top:1px solid var(--line);}
+  .alertrow:first-of-type{border-top:none;}
+  .alertrow .name{font-size:13px; font-weight:600; color:var(--ink);}
+  .alertrow .detail{font-size:11.5px; color:var(--ink-soft); margin-top:2px;}
+  .alertbadge{font-size:11.5px; font-weight:700; background:var(--burgundy-soft); color:var(--burgundy); padding:3px 9px; border-radius:999px; flex-shrink:0;}
+  .barrow{margin-bottom:10px;}
+  .barrow .barlbl{display:flex; justify-content:space-between; font-size:12px; color:var(--ink-soft); margin-bottom:4px;}
+  .bartrack{background:var(--cream); border-radius:4px; height:8px; overflow:hidden;}
+  .barfill{background:var(--wheat); height:100%; border-radius:4px;}
+  .editbtn{flex-shrink:0; padding:7px 12px; border-radius:8px; border:1.5px solid var(--wheat); background:var(--wheat-soft); color:var(--wheat); font-size:12px; font-weight:700; cursor:pointer;}
+  .editbanner{background:var(--wheat-soft); color:var(--wheat); border:1px solid var(--wheat); border-radius:10px; padding:10px 14px; margin-bottom:14px; font-size:13px; font-weight:600;}
+  .editbanner [data-cancel-edit]{text-decoration:underline; cursor:pointer;}
+  .ghostbtn{width:100%; padding:9px; border-radius:10px; border:1.5px solid var(--line); background:transparent; color:var(--ink-soft); font-size:13px; font-weight:600; cursor:pointer;}
+
+  .empty{text-align:center; padding:30px 10px; color:var(--ink-soft); font-size:13px;}
+  .empty .glyph{font-size:30px; margin-bottom:8px;}
+
+  .visitrow{border-bottom:1px dashed var(--line); padding:10px 0; font-size:12.5px; cursor:pointer;}
+  .visitrow:last-child{border-bottom:none;}
+  .visitrow .top{display:flex; justify-content:space-between; font-weight:600; color:var(--ink);}
+  .visitrow .bottom{color:var(--ink-soft); margin-top:2px;}
+  .visitdetail{background:var(--cream); border-radius:10px; padding:10px 12px; margin-top:8px; font-size:12px; color:var(--ink-soft); display:none;}
+  .visitdetail.show{display:block;}
+  .visitdetail .drow{display:flex; justify-content:space-between; padding:3px 0; border-bottom:1px dashed var(--line);}
+  .visitdetail .drow:last-child{border-bottom:none;}
+  .detailphotos{display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-top:8px;}
+  .detailphotos img{width:100%; height:50px; object-fit:cover; border-radius:6px;}
+
+  .loading{text-align:center; padding:40px 10px; color:var(--ink-soft); font-size:13px;}
+  .err{background:var(--burgundy-soft); color:var(--burgundy); padding:10px 12px; border-radius:10px; font-size:12.5px; margin-bottom:12px;}
+</style>
+
+<div id="root" class="app"></div>
+
+<script>
+(function(){
+
+  // ======================================================================
+  // CONFIGURACIÓN: pega aquí la URL de tu Google Apps Script (Web App)
+  // una vez que la despliegues siguiendo las instrucciones. Debe verse
+  // así: https://script.google.com/macros/s/AKfycb.../exec
+  // ======================================================================
+  var CONFIG = {
+    SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbw7dL4R18hdTDC9vjp-npeKf3uwzr_04GUubRDBAqVL1x1-JXi16behzJ2OASW29I161Q/exec'
+  };
+
+  var DISTRITOS = [
+    'ATLANTICO NORTE',
+    'ATLANTICO SUR',
+    'BOLÍVAR',
+    'CÓRDOBA - SUCRE',
+    'CESAR - LA GUAJIRA - MAGDALENA',
+    'BGT NORTE Y SÁBANA',
+    'BGT SUR Y MUNICIPIOS - N. SANTANDER - META - BOYACÁ - CASANARE',
+    'CAUCA - VALLE DEL CAUCA - HUILA',
+    'ANT - CALDAS - CHOCÓ - QUINDÍO - RISARALDA - TOLIMA - N. VALLE DEL CAUCA'
+  ];
+
+  var PERIODOS = [
+    {key:'todas', label:'Todas'},
+    {key:'hoy', label:'Hoy'},
+    {key:'semana', label:'Esta semana'},
+    {key:'mes', label:'Este mes'}
+  ];
+
+  var TIENDAS_POR_DISTRITO = {
+    'ANT - CALDAS - CHOCÓ - QUINDÍO - RISARALDA - TOLIMA - N. VALLE DEL CAUCA': ['SAO 138  SANTIAGO PLAZA', 'SAO 312 APARTADÓ', 'SAO 358 PORTAL QUINDIO', 'SAO 366 ARMENIA SUR', 'SAO 376 MANIZALES MALL PLAZA', 'SAO 384 IBAGUÉ La Estación', 'SAO 679 QUIBDO', 'SDO 362 MANIZALES', 'STO 280 MONTEBONITO', 'STO 300 ARRAYANES', 'STO 304 CAUCASIA', 'STO 333 ITAGUI N°2 Cr 54', 'STO 338 BELLO Cl 51', 'STO 340 SAN LUCAS', 'STO 341 VILLANUEVA', 'STO 343 LA MILAGROSA', 'STO 345 ITAGUI', 'STO 346  BELEN', 'STO 350 GAMA', 'STO 351 PEREIRA', 'STO 352 DOS QUEBRADAS', 'STO 353 SANTA ROSA', 'STO 354 VIRGINIA', 'STO 355 DEL NORTE', 'STO 357 CUBA', 'STO 359 EL BOSQUE', 'STO 361 MANIZALES CENTRO', 'STO 364 AV SANTANDER', 'STO 365 VILLA MARIA', 'STO 367 LA COSECHA', 'STO 368 CHINCHINÁ', 'STO 369 ALTAVISTA', 'STO 374 CARTAGO 3', 'STO 375 ROLDANILLO', 'STO 381 ESPINAL', 'STO 399 LA DORADA CALDAS', 'STO 556 CARTAGO 2', 'STO 558 SEVILLA', 'STO 560 ZARZAL', 'STO 561 QUIMBAYA', 'STO 562 MONTENEGRO', 'STO 563 CALARCA', 'STO 575 CAICEDONIA II', 'STO 896 NECOCLÍ'],
+    'ATLANTICO NORTE': ['SAO 053 PORTAL DEL PRADO', 'SAO 093 Cr 46', 'SAO 094 VILLA CAROLINA', 'SDO 037 PRADOMAR', 'SDO 048 SAGRADO CORAZON', 'SDO 052 TORRES DEL METRO', 'SDO 058 CATALUNYA', 'SDO 099 PLAZA DEL PARQUE', 'SDO 514 Cl 73 24 HORAS', 'SDO 515 TORCOROMA', 'SDO 526 GRAN CENTRO', 'SDO 528 FRENTE SAO 93', 'STO 009 PUERTO COLOMBIA', 'STO 015 LA PAZ', 'STO 027 LOS OLIVOS Cr 27', 'STO 028 SILENCIO', 'STO 038 CAMPO ALEGRE', 'STO 041 CARIBE VERDE', 'STO 043 MIRAMAR', 'STO 051 VILLA CAMPESTRE', 'STO 054 VILLA CAMPESTRE CL 3', 'STO 055 LA PRADERA', 'STO 059 GOLF', 'STO 060 TANGANAZO', 'STO 061 RECREO', 'STO 062 LA PLAYA', 'STO 066 JARDIN DEL RIO', 'STO 068 NUEVA GRANADA', 'STO 072 PARQUE ELIAS CHEGWIN', 'STO 073 CIUDAD JARDIN Cl 73', 'STO 076 PRADO ALTO', 'STO 078 CIUDAD JARDIN', 'STO 079 VILLA COUNTRY', 'STO 080 GRANADILLO', 'STO 081 MALLORQUIN', 'STO 082 PORVENIR Cr 46', 'STO 083 MUELLE DEL RIO ALAMEDA', 'STO 084 PARAISO', 'STO 085 CALLE 85', 'STO 098 BUENA VISTA', 'STO 100 VILLA SANTOS', 'STO 510 BOULEVARD', 'STO 544 Cl 82 con 53'],
+    'ATLANTICO SUR': ['SAO 031 HIPODROMO', 'SAO 047 MACARENA', 'SAO 067 PARQUE ALEGRA', 'STO 004 VILLA OLIMPICA', 'STO 005 AV. LAS TORRES', 'STO 006 BOSQUE', 'STO 007 MALAMBO', 'STO 008 CAMPITO Cr 8', 'STO 014 7 DE ABRIL', 'STO 016 GALAPA', 'STO 017 BARANOA', 'STO 018 SOLEDAD', 'STO 019 SANTO TOMAS', 'STO 021 LOS ANDES', 'STO 022 SABANALARGA', 'STO 023 LOS ROBLES', 'STO 024 LAS NIEVES', 'STO 025 LOS MANGOS', 'STO 026 SOLEDAD C.C.', 'STO 029 SABANAGRANDE', 'STO 030 MERCADO Cl 30', 'STO 032 SABANALARGA Cr 22', 'STO 033 SOLEDAD 2000', 'STO 034 PALMAR DE VARELA', 'STO 035 EL CONCORD', 'STO 036 LAS PALMAS', 'STO 039 CHIQUINQUIRA', 'STO 042 UNIVERSAL Cr 4', 'STO 045 CIUDADELA', 'STO 046 MURILLO Cr 20', 'STO 056 BUENA ESPERANZA', 'STO 057 VILLA ADELA', 'STO 063 TERMINAL', 'STO 064 LA CENTRAL', 'STO 065 MURILLO ESTADIO', 'STO 069 REBOLO', 'STO 074 CIUDAD DEL PARQUE', 'STO 077 PLAZA LOS ROBLES', 'STO 086 PLAZA DORADA', 'STO 088 LA REDONDA', 'STO 089 CIUDAD DEL PUERTO', 'STO 503 SIMON BOLIVAR', 'STO 516 CORDIALIDAD Cr 16'],
+    'BGT NORTE Y SÁBANA': ['SAO 416 SUBA', 'SAO 432 PORTAL DE LA 80', 'SDO 443 PLAZA 147', 'SDO 446 CALLE 67', 'SDO 472 LA FONTANA', 'SDO 473 PLAZA', 'SDO 475 AVENIDA', 'SDO 482 CHIA', 'STO 396 CAJICÁ', 'STO 401 CASTELLANA', 'STO 402 CALLE 100', 'STO 403 VILLA MAGDALA', 'STO 404 SANTA ANA', 'STO 407 ROSALES', 'STO 408 CONTADOR', 'STO 410 Cl 63', 'STO 411 CHICO I', 'STO 418 COLINA CAMPESTRE', 'STO 419 AUTOPISTA NORTE', 'STO 420 CENT C/CIAL', 'STO 422 SAN PATRICIO', 'STO 423 CHAPINERO', 'STO 424 CHICO II', 'STO 425 MODELO', 'STO 428 MAZUREN', 'STO 431 CALLE 56', 'STO 436 ISERRA', 'STO 437 HACIENDA SANTA BARBARA', 'STO 438 CEDRITOS', 'STO 439 7 DE AGOSTO', 'STO 454 COSMO 64', 'STO 457 PALATINO', 'STO 465 CHILACOS', 'STO 466 CALLE 95 con 11', 'STO 467 CHAPINERO ALTO', 'STO 468 VIRREY', 'STO 625 COTA', 'STO 627 METROPOLIS', 'STO 646 SUBA SALITRE', 'STO 688 CAJICA FONTANAR', 'STO 689 PEPE SIERRA', 'STO 695 UNICENTRO', 'STO 699 TOCANCIPA', 'STO 717 CALLE 93'],
+    'BGT SUR Y MUNICIPIOS - N. SANTANDER - META - BOYACÁ - CASANARE': ['SAO 393 YOPAL', 'SAO 405 PLAZA DE LAS AMERICAS', 'SAO 421 GIRARDOT', 'SAO 626 TERREROS', 'SAO 640 CENTRO', 'SAO 645 JARDIN PLAZA - CUCUTA', 'SAO 684 LAS PALMAS FUSAGASUGA', 'SDO 480 FONTIBON', 'STO 261 OCAÑA', 'STO 388 PUERTO BOYACÁ', 'STO 394 FUNZA Cr 13', 'STO 395 PRADO VERDE', 'STO 397 BOSA NOVA', 'STO 406 SANTA ISABEL', 'STO 409 AVENIDA', 'STO 412 CENT NARIÑO', 'STO 414 QUINTA RAMOS', 'STO 415 NORMANDIA', 'STO 417 UNISUR', 'STO 426 JIMENEZ', 'STO 427 KENNEDY', 'STO 433 VILLACENTRO', 'STO 434 EL RECREO', 'STO 435 BOSA METRORECREO', 'STO 453  RICAURTE', 'STO 601 GRAN PLAZA', 'STO 624 CASABLANCA', 'STO 628 JARDIN VERDE', 'STO 629 EL UNICO', 'STO 641 GUAIMARAL', 'STO 642 LOS PINOS', 'STO 643 PRADOS', 'STO 644 QUINTA ORIENTAL', 'STO 681 GIRARDOT ESTADIO', 'STO 682 AUTOGRANDE', 'STO 683 PERDOMO', 'STO 685 PASEO DEL RIO', 'STO 686 ROSABLANCA', 'STO 690 ALAMOS', 'STO 696 MOSQUERA', 'STO 698 PLAZA SOACHA', 'STO 715 FONTIBON RECODO'],
+    'BOLÍVAR': ['SAO 105 LA PLAZUELA', 'SAO 112 SAN FELIPE', 'SAO 127 GRAN MANZANA', 'SAO 324 MAGANGUE', 'SDO 613 LA PLAZUELA', 'STO 044 CALAMAR CL 20', 'STO 101 BADILLO', 'STO 102 MATUNA', 'STO 103 BOCAGRANDE', 'STO 104 LOS EJECUTIVOS', 'STO 106 TORICES', 'STO 107 PIE DE LA POPA', 'STO 108 CRISANTO LUQUE', 'STO 109 BUENOS AIRES', 'STO 110 BLAS DE LEZO', 'STO 113 TRECE DE JUNIO', 'STO 114 VILLA CANDELARIA', 'STO 115 OUTLET BOSQUE', 'STO 116 ARJONA', 'STO 117 TURBACO', 'STO 118 PEDRO DE HEREDIA', 'STO 119 LOS CAMPANOS', 'STO 120 SAN FERNANDO', 'STO 122 CARMELO', 'STO 123 CAMPESTRE', 'STO 124 CASTELLANA MALL', 'STO 125 ZARAGOCILLA', 'STO 126 PARQUE HEREDIA', 'STO 128 TURBACO PLAZA 90', 'STO 129 MANGA', 'STO 141 MARIA LA BAJA', 'STO 142 GETSEMANI', 'STO 331 SAN JUAN NEPOMUCENO', 'STO 609 BAZURTO', 'STO 610 24 HORAS', 'STO 786 MOMPÓS 2', 'STO 789 MOMPÓS', 'STO 798 CARMEN DE BOLIVAR'],
+    'CAUCA - VALLE DEL CAUCA - HUILA': ['SAO 380 NEIVA', 'SAO 548 BUENAVENTURA 2 Cr 46', 'SAO 581 POPAYAN CENTRAL', 'SAO 585 MARDEN 47', 'SAO 586 MARDEN BOSQUE', 'STO 130 GUADALUPE', 'STO 132 PORVENIR', 'STO 133 LA QUINTA', 'STO 134 LA 26', 'STO 135 CAÑAVERAL', 'STO 136 SALOMIA', 'STO 137 VILLACOLOMBIA', 'STO 139 LA BASE', 'STO 140 AV. TERCERA NORTE', 'STO 373 PALMERA PLAZA', 'STO 378 AMARANTO', 'STO 379 IPANEMA', 'STO 382 SANTA LOMA', 'STO 383 CANAIMA', 'STO 385 POPULAR JARDIN', 'STO 386 POPULAR CENTRO', 'STO 387 SAN AGUSTÍN', 'STO 398 CAMPOALEGRE', 'STO 547 PUERTO TEJADA Cl 22', 'STO 549 CANEY', 'STO 550 TEQUENDAMA', 'STO 552 VERSALLES', 'STO 553 BUGA', 'STO 554 TULUÁ', 'STO 557 BUENAVENTURA', 'STO 567 RESTREPO', 'STO 568 GUAYAQUIL', 'STO 569 ACACIAS', 'STO 570 BARRANQUILLA', 'STO 573 LOS CRISTALES', 'STO 577 LA CAMPIÑA', 'STO 579 PALMIRA', 'STO 580 POPAYAN NORTE', 'STO 582 SANTANDER DE QUILICHAO', 'STO 587 TULUA CANASTA', 'STO 588 LAS GRANJAS', 'STO 589 LOS LAGOS', 'STO 590 CANDELARIA VALLE', 'STO 592 PALMIRA UNICENTRO', 'STO 593 EL POBLADO', 'STO 594 LAS GRANJAS 2', 'STO 595 PRIMAVERA', 'STO 596 GUACARI', 'STO 598 POPAYAN Cr 9', 'STO 678 LAS AMERICAS', 'STO 687 MONSERRAT', 'STO 693 PACIFIC PLAZA BVENTURA', 'STO 694 GARZÓN', 'STO 697 MONTEMADERO'],
+    'CESAR - LA GUAJIRA - MAGDALENA': ['SAO 203 SANTAMARTA', 'SAO 212 RIOACHA', 'SAO 251 VALLEDUPAR', 'SAO 256 AGUACHICA Cr 23', 'SAO 260 MEGAMALL', 'SDO 210 ESTACION MOVIL RIO', 'SDO 258 MAYALES', 'SDO 754 TACALOA RODADERO', 'SDO 760 PETROMIL', 'STO  207 FUNDACION', 'STO 201 CENTRO', 'STO 202 RODADERO', 'STO 204 AV. L/TADOR', 'STO 205 RECORD', 'STO 206 SANTAMARTA', 'STO 208 TERMINAL SANTA MARTA', 'STO 209 GAIRA', 'STO 211 CARRERA 24', 'STO 214 MANZANARES Cl 30', 'STO 215 ARACATACA', 'STO 216 MINCA', 'STO 217 LA BONGA', 'STO 218 PIVIJAY', 'STO 219 EL BANCO MAGDALENA', 'STO 221 RIOHACHA Cr 7', 'STO 222 BELLO HORIZONTE', 'STO 223 MAMATOCO', 'STO 224 FONSECA', 'STO 225 MAICAO', 'STO 226 MAICAO MEZQUITA', 'STO 227 11 DE NOVIEMBRE', 'STO 228 LAS MERCEDES', 'STO 229 URIBIA', 'STO 230 ALBANIA', 'STO 231 BAVARIA STM', 'STO 232 ALUNA STM', 'STO 252 VALLEDUPAR CORTIJO', 'STO 253 CODAZZI', 'STO 254 SAN JUAN DEL CESAR', 'STO 255 SIERRA NEVADA VDP', 'STO 257 BOSCONIA', 'STO 259 CURUMANÍ', 'STO 262 LA JAGUA DE IBIRICO', 'STO 263 UNICENTRO (VDUPAR)', 'STO 264 EL COPEY', 'STO 265 LA LOMA', 'STO 267 VILLANUEVA', 'STO 330 PLATO Cr 15', 'STO 701 CIÉNAGA CALLE 20', 'STO 702 CLINICA MAR CARIBE', 'STO 704 CIÉNAGA CALLE 17', 'STO 752 VALLEDUPAR', 'STO 785 SANTA ANA - Magdalena'],
+    'CÓRDOBA - SUCRE': ['SAO 302 CIRCUNVALAR', 'SAO 310 BUENAVISTA MONTERIA', 'SAO 320 GUACARI SINCELEJO', 'SAO 321 SINCELEJO', 'SDO 892 MONTERIA', 'SDO 895 Cl 16 MONTERIA', 'STO 290 TIERRALTA', 'STO 291 SANTA HELENA', 'STO 301 CENTRO', 'STO 303 C.C. DEL SUR', 'STO 305 LORICA', 'STO 306 SAHAGÚN', 'STO 307 PLANETA RICA', 'STO 308 MONTELÍBANO', 'STO 309 CERETÉ Cr 11', 'STO 311 6 DE MARZO', 'STO 313 CIÉNAGA DE ORO', 'STO 314 MARGEN IZQUIERDA', 'STO 315 MONTEVERDE', 'STO 316 P5 MONTERIA', 'STO 318 COVEÑAS', 'STO 319 SAMPUÉS', 'STO 322 COROZAL', 'STO 323 EURO', 'STO 325 TOLU', 'STO 326 SAN CARLOS', 'STO 327 ARGELIA', 'STO 328 SAN MARCOS', 'STO 329 CHINU', 'STO 332 SAN ONOFRE', 'STO 787 LA FORD', 'STO 788 SAN MIGUEL', 'STO 790 Cr 18 SINCELEJO', 'STO 794 Cl 25B SINCELEJO'],
+  };
+
+  var COMERCIALES = [
+    'CLAUDIA PIRAGAUTA',
+    'DANIELA ARBOLEDA',
+    'KAREN ORTIZ',
+    'KATHIA DIAZ',
+    'KELLY ROJAS',
+    'SANDRA VARGAS',
+    'ADRIANA MENDEZ',
+    'LISBETH JULIO',
+    'EILEEN LUQUE',
+    'AURA MONTERROSA',
+    'MARGARETH CANO',
+    'ANNSHIRLEY FREITE',
+    'MARTHA GOMEZ',
+    'ALEJANDRA ARTEAGA',
+    'TATIANA BERDUGO',
+    'VIVIAN RODRIGUEZ',
+    'OLIVIA SALAZAR',
+    'INDIRA PEREZ',
+    'LUDIS MOLINA',
+    'SINNDY RODRIGUEZ'
+  ];
+
+  var TRIPLE_ITEMS = [
+    {key:'pop', label:'Material POP: Comunicación'},
+    {key:'manual', label:'Manual de exhibición'},
+    {key:'vitrina', label:'Vitrina - Caliente Hojaldres'},
+    {key:'portafolio', label:'Disponibilidad del portafolio'}
+  ];
+  var SINO_ITEMS = [
+    {key:'agotados', label:'Agotados', goodVal:false},
+    {key:'limpieza', label:'Limpieza del Lineal', goodVal:true},
+    {key:'rotacion', label:'Rotación diaria según vencimiento', goodVal:true},
+    {key:'rotulado', label:'Validación de rotulado y etiqueta', goodVal:true},
+    {key:'almacenamiento', label:'Estado de almacenamiento de resurtido', goodVal:true}
+  ];
+  var PHOTO_CATEGORIES = [
+    {key:'bombazos', label:'Bombazos'},
+    {key:'vitrina', label:'Vitrina'},
+    {key:'exhibicion', label:'Exhibición general'},
+    {key:'precios', label:'Precios Rojos'}
+  ];
+  var PHOTO_SLOTS_ANTES = PHOTO_CATEGORIES.map(function(c){ return {key:c.key+'_antes', label:c.label}; });
+  var PHOTO_SLOTS_DESPUES = PHOTO_CATEGORIES.map(function(c){ return {key:c.key+'_despues', label:c.label}; });
+
+  function emptyForm(keepImp, keepTienda, keepDistrito){
+    var triple = {}; TRIPLE_ITEMS.forEach(function(i){triple[i.key]=null;});
+    var sino = {}; SINO_ITEMS.forEach(function(i){sino[i.key]=null;});
+    return {
+      impulsadora: keepImp||'', tienda:'', director:'', distrito: keepDistrito||DISTRITOS[0],
+      recibe:'', localizacion:'', lat:null, lng:null,
+      ventaAcumDinero:0, metaDinero:'',
+      ventaHojaldres:'', ventaPanaderia:'', ventaReposteria:'', tieneVitrinaHojaldre:null,
+      triple: triple, sino: sino,
+      tieneCanastillas:null, canastillasPanaderia:'', canastillasReposteria:'',
+      fotos:{}, obs:''
+    };
+  }
+
+  var state = {
+    tab:'form', loading:true, visits:[], error:null, submitting:false, showStamp:false,
+    expanded:{}, locStatus:null, geoStatus:null, editingId:null,
+    filters: {periodo:'todas', distrito:'', impulsadora:''},
+    form: emptyForm()
+  };
+
+  var root = document.getElementById('root');
+  var DRAFT_KEY = 'visitaDraft_v1';
+
+  function saveDraft(){
+    try{
+      if(state.editingId) return; // no se guarda borrador de una edición, solo de visitas nuevas
+      var hasContent = state.form.impulsadora || state.form.tienda || state.form.director ||
+        state.form.recibe || state.form.metaDinero || state.form.ventaPanaderia || state.form.ventaReposteria ||
+        state.form.obs || (state.form.fotos && Object.keys(state.form.fotos).length);
+      if(!hasContent){ localStorage.removeItem(DRAFT_KEY); return; }
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ form: state.form, savedAt: Date.now() }));
+    }catch(e){ /* si el almacenamiento falla, no bloquea el resto de la app */ }
+  }
+
+  function loadDraft(){
+    try{
+      var raw = localStorage.getItem(DRAFT_KEY);
+      if(!raw) return null;
+      var draft = JSON.parse(raw);
+      // ignora borradores de más de 12 horas, para no revivir algo muy viejo por error
+      if(!draft.savedAt || (Date.now()-draft.savedAt) > 12*60*60*1000){
+        localStorage.removeItem(DRAFT_KEY);
+        return null;
+      }
+      return draft;
+    }catch(e){ return null; }
+  }
+
+  function clearDraft(){
+    try{ localStorage.removeItem(DRAFT_KEY); }catch(e){}
+  }
+
+  var draftSaveTimer = null;
+  function scheduleDraftSave(){
+    if(draftSaveTimer) clearTimeout(draftSaveTimer);
+    draftSaveTimer = setTimeout(saveDraft, 400);
+  }
+
+  function fmtMoney(n){ n=Number(n)||0; return '$'+n.toLocaleString('es-CO',{maximumFractionDigits:0}); }
+  function fmtPct(n){ return (Math.round(n*1000)/10)+'%'; }
+  function pctClass(p){ if(p>=1) return 'good'; if(p>=0.7) return 'mid'; return 'bad'; }
+  function isToday(ts){
+    if(!ts) return false;
+    var d = new Date(ts), now = new Date();
+    return d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth() && d.getDate()===now.getDate();
+  }
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+
+  async function loadVisits(){
+    if(CONFIG.SCRIPT_URL.indexOf('PEGA_AQUI') === 0){
+      state.loading = false;
+      state.error = 'Falta conectar la app con tu Google Sheet. Pega la URL de tu Apps Script en la CONFIGURACIÓN del código.';
+      render();
+      return;
+    }
+    state.loading = true; render();
+    try{
+      var resp = await fetch(CONFIG.SCRIPT_URL, { method:'GET' });
+      if(!resp.ok) throw new Error('http '+resp.status);
+      var data = await resp.json();
+      var visits = Array.isArray(data) ? data : (data && data.visits) || [];
+      visits.sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
+      state.visits = visits;
+      state.error = null;
+    }catch(e){
+      state.error = 'No se pudieron cargar los datos guardados. Revisa tu conexión a internet e intenta de nuevo.';
+    }
+    state.loading = false; render();
+  }
+
+  function updateForm(key, value){
+    state.form[key] = value;
+    if(key === 'distrito') state.form.tienda = ''; // la tienda depende del distrito, se limpia al cambiarlo
+    render();
+  }
+  function updateTriple(key, value){ state.form.triple[key] = value; render(); }
+  function updateSino(key, value){ state.form.sino[key] = value; render(); }
+
+  function currentPctPpto(){
+    var hojaldre = state.form.tieneVitrinaHojaldre===true ? (Number(state.form.ventaHojaldres)||0) : 0;
+    var v = (Number(state.form.ventaPanaderia)||0) + (Number(state.form.ventaReposteria)||0) + hojaldre;
+    var m = Number(state.form.metaDinero)||0;
+    if(!m) return null;
+    return v/m;
+  }
+
+  function scoreVisit(v){
+    var vals = [];
+    TRIPLE_ITEMS.forEach(function(i){ if(v.triple[i.key]!==null && v.triple[i.key]!==undefined) vals.push(v.triple[i.key]==='buena'); });
+    SINO_ITEMS.forEach(function(i){ if(v.sino[i.key]!==null && v.sino[i.key]!==undefined) vals.push(v.sino[i.key]===i.goodVal); });
+    if(vals.length===0) return null;
+    var good = vals.filter(Boolean).length;
+    return good/vals.length;
+  }
+
+  function startEdit(id){
+    var v = state.visits.find(function(x){ return x.id===id; });
+    if(!v) return;
+    if(!isToday(v.ts)){
+      state.error = 'Esta visita ya no se puede editar porque quedó guardada de un día anterior.';
+      render();
+      return;
+    }
+    state.editingId = v.id;
+    state.form = {
+      impulsadora: v.impulsadora||'', tienda: v.tienda||'', director: v.director||'',
+      distrito: v.distrito||DISTRITOS[0], recibe: v.recibe||'',
+      localizacion: v.localizacion||'', lat: v.lat||null, lng: v.lng||null,
+      ventaAcumDinero: v.ventaAcumDinero||0,
+      metaDinero: v.metaDinero||'', ventaHojaldres: v.ventaHojaldres||'',
+      ventaPanaderia: v.ventaPanaderia||'', ventaReposteria: v.ventaReposteria||'',
+      tieneVitrinaHojaldre: v.tieneVitrinaHojaldre,
+      triple: Object.assign({}, v.triple), sino: Object.assign({}, v.sino),
+      tieneCanastillas: v.tieneCanastillas,
+      canastillasPanaderia: v.canastillasPanaderia||'', canastillasReposteria: v.canastillasReposteria||'',
+      fotos: Object.assign({}, v.fotos), obs: v.obs||''
+    };
+    state.tab = 'form';
+    state.locStatus = null;
+    render();
+    window.scrollTo(0,0);
+  }
+
+  function cancelEdit(){
+    var imp = state.form.impulsadora;
+    var dist = state.form.distrito;
+    state.editingId = null;
+    state.form = emptyForm(imp, '', dist);
+    render();
+  }
+
+  function requiredPhotoSlots(f){
+    return PHOTO_SLOTS_ANTES.concat(PHOTO_SLOTS_DESPUES).filter(function(slot){
+      if(slot.key === 'vitrina_antes' || slot.key === 'vitrina_despues'){
+        return f.tieneVitrinaHojaldre === true; // solo obligatoria si la tienda tiene vitrina
+      }
+      return true;
+    });
+  }
+
+  function validForm(){
+    var f = state.form;
+    var fotos = f.fotos || {};
+    var todasLasFotos = requiredPhotoSlots(f).every(function(slot){ return !!fotos[slot.key]; });
+    return f.impulsadora.trim() && f.tienda.trim() && todasLasFotos;
+  }
+
+  function useLocation(){
+    try{
+      if(!navigator.geolocation){
+        state.locStatus = 'Este navegador no soporta ubicación GPS. Prueba con Chrome o Safari actualizados.';
+        render(); return;
+      }
+      state.locStatus = 'Obteniendo ubicación...';
+      render();
+
+      function onError(err, triedLowAccuracy){
+        try{
+          if(err && err.code === 1){ // PERMISSION_DENIED
+            state.locStatus = 'Permiso de ubicación bloqueado. Ve a Configuración del navegador → Permisos del sitio → Ubicación, y actívalo para esta app.';
+            render();
+          } else if(err && err.code === 2 && !triedLowAccuracy){ // POSITION_UNAVAILABLE: reintenta con precisión más baja
+            navigator.geolocation.getCurrentPosition(onSuccess, function(err2){ onError(err2, true); },
+              {enableHighAccuracy:false, timeout:12000, maximumAge:0});
+          } else if(err && err.code === 2){
+            state.locStatus = 'El GPS del celular no responde. Verifica que la ubicación esté activada en el celular (no solo en el navegador) e intenta de nuevo.';
+            render();
+          } else if(err && err.code === 3 && !triedLowAccuracy){ // TIMEOUT: reintenta con precisión más baja
+            navigator.geolocation.getCurrentPosition(onSuccess, function(err2){ onError(err2, true); },
+              {enableHighAccuracy:false, timeout:12000, maximumAge:0});
+          } else {
+            state.locStatus = 'No se pudo obtener la ubicación a tiempo (error: '+(err && err.message ? err.message : 'desconocido')+'). Sal a un lugar más abierto e intenta de nuevo.';
+            render();
+          }
+        }catch(e2){
+          state.locStatus = 'Ocurrió un error inesperado obteniendo la ubicación: '+e2.message;
+          render();
+        }
+      }
+      async function onSuccess(pos){
+        state.form.lat = pos.coords.latitude;
+        state.form.lng = pos.coords.longitude;
+        state.locStatus = 'ok';
+        state.geoStatus = 'buscando';
+        render();
+        try{
+          var resp = await fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat='+state.form.lat+'&lon='+state.form.lng+'&zoom=18&addressdetails=0');
+          var data = await resp.json();
+          if(data && data.display_name){
+            state.form.localizacion = data.display_name;
+          }
+        }catch(e){ /* si falla la dirección, se dejan las coordenadas y el mapa igual funciona */ }
+        state.geoStatus = null;
+        render();
+      }
+      navigator.geolocation.getCurrentPosition(onSuccess, function(err){ onError(err, false); },
+        {enableHighAccuracy:true, timeout:8000, maximumAge:0});
+    }catch(e){
+      state.locStatus = 'Ocurrió un error inesperado al activar el GPS: '+e.message;
+      render();
+    }
+  }
+
+  function resizeImage(file, maxW, cb, onError){
+    var reader = new FileReader();
+    reader.onerror = function(){ if(onError) onError('No se pudo leer el archivo de la foto.'); };
+    reader.onload = function(e){
+      var img = new Image();
+      img.onerror = function(){ if(onError) onError('La foto no se pudo procesar (formato no compatible). Intenta tomarla de nuevo.'); };
+      img.onload = function(){
+        try{
+          var scale = Math.min(1, maxW/img.width);
+          var canvas = document.createElement('canvas');
+          canvas.width = Math.max(1, Math.round(img.width*scale));
+          canvas.height = Math.max(1, Math.round(img.height*scale));
+          var ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          cb(canvas.toDataURL('image/jpeg', 0.6));
+        }catch(err){
+          if(onError) onError('No se pudo procesar la foto: '+err.message);
+        }
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function handlePhoto(key, fileInput){
+    var file = fileInput.files && fileInput.files[0];
+    if(!file) return;
+    state.form.fotoProcesando = key;
+    render();
+    resizeImage(file, 480, function(dataUrl){
+      state.form.fotos[key] = dataUrl;
+      state.form.fotoProcesando = null;
+      render();
+      saveDraft(); // guarda de inmediato, sin esperar el retraso normal, apenas se captura cada foto
+    }, function(errMsg){
+      state.form.fotoProcesando = null;
+      state.error = errMsg;
+      render();
+    });
+  }
+
+  async function submitVisit(e){
+    e.preventDefault();
+    if(!validForm() || state.submitting) return;
+    state.submitting = true; render();
+    var ts = Date.now();
+    var f = state.form;
+    var isEdit = !!state.editingId;
+    var record = {
+      id: isEdit ? state.editingId : ('v_'+ts+'_'+Math.random().toString(36).slice(2,8)),
+      ts: ts,
+      fecha: new Date(ts).toLocaleDateString('es-CO'),
+      hora: new Date(ts).toLocaleTimeString('es-CO'),
+      impulsadora: f.impulsadora.trim(), tienda: f.tienda.trim(), director: f.director.trim(),
+      distrito: f.distrito, recibe: f.recibe.trim(),
+      localizacion: f.localizacion.trim(), lat: f.lat, lng: f.lng,
+      ventaAcumDinero: (Number(f.ventaPanaderia)||0) + (Number(f.ventaReposteria)||0) + (f.tieneVitrinaHojaldre===true ? Number(f.ventaHojaldres)||0 : 0),
+      metaDinero: Number(f.metaDinero)||0,
+      tieneVitrinaHojaldre: f.tieneVitrinaHojaldre,
+      ventaHojaldres: f.tieneVitrinaHojaldre===true ? (Number(f.ventaHojaldres)||0) : 0, ventaPanaderia: Number(f.ventaPanaderia)||0, ventaReposteria: Number(f.ventaReposteria)||0,
+      triple: Object.assign({}, f.triple), sino: Object.assign({}, f.sino),
+      tieneCanastillas: f.tieneCanastillas,
+      canastillasPanaderia: f.tieneCanastillas===true ? (Number(f.canastillasPanaderia)||0) : 0,
+      canastillasReposteria: f.tieneCanastillas===true ? (Number(f.canastillasReposteria)||0) : 0,
+      fotos: Object.assign({}, f.fotos), obs: f.obs.trim()
+    };
+    try{
+      if(CONFIG.SCRIPT_URL.indexOf('PEGA_AQUI') === 0) throw new Error('sin configurar');
+      var resp = await fetch(CONFIG.SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita preflight CORS
+        body: JSON.stringify(record)
+      });
+      var result = await resp.json();
+      if(!result || result.ok === false) throw new Error((result && result.error) || 'save failed');
+      var savedRecord = result.record || record;
+      if(isEdit){
+        var idx = state.visits.findIndex(function(v){ return v.id===savedRecord.id; });
+        if(idx !== -1) state.visits[idx] = savedRecord; else state.visits.unshift(savedRecord);
+      } else {
+        state.visits.unshift(savedRecord);
+      }
+      state.error = null;
+      state.editingId = null;
+      state.form = emptyForm(record.impulsadora, '', record.distrito);
+      state.locStatus = null;
+      state.draftRestoredAt = null;
+      clearDraft();
+      state.showStamp = true;
+      render();
+      setTimeout(function(){ state.showStamp=false; render(); }, 1400);
+    }catch(err){
+      state.error = 'No se pudo guardar la visita. Revisa tu conexión a internet e intenta de nuevo.';
+    }
+    state.submitting = false; render();
+  }
+
+  function aggregateByTienda(visits){
+    var map = {};
+    visits.forEach(function(v){
+      var k = v.tienda || 'Sin nombre';
+      if(!map[k]) map[k] = {name:k, count:0, venta:0, meta:0};
+      map[k].count++;
+      map[k].venta += v.ventaAcumDinero;
+      map[k].meta += v.metaDinero;
+    });
+    return Object.values(map);
+  }
+
+  function aggregateByImpulsadora(visits){
+    var map = {};
+    visits.forEach(function(v){
+      var k = v.impulsadora || 'Sin nombre';
+      if(!map[k]) map[k] = {name:k, count:0, venta:0, meta:0};
+      map[k].count++;
+      map[k].venta += v.ventaAcumDinero;
+      map[k].meta += v.metaDinero;
+    });
+    return Object.values(map).sort(function(a,b){
+      var pa = a.meta ? a.venta/a.meta : -1;
+      var pb = b.meta ? b.venta/b.meta : -1;
+      return pb-pa;
+    });
+  }
+
+  function countRedFlags(v){
+    var bad = 0; var labels = [];
+    TRIPLE_ITEMS.forEach(function(i){
+      if(i.key==='vitrina' && v.tieneVitrinaHojaldre!==true) return;
+      if(v.triple[i.key]==='mala'){ bad++; labels.push(i.label); }
+    });
+    SINO_ITEMS.forEach(function(i){
+      if(v.sino[i.key]!==null && v.sino[i.key]!==undefined && v.sino[i.key]!==i.goodVal){ bad++; labels.push(i.label); }
+    });
+    return {count:bad, labels:labels};
+  }
+
+  function filteredVisits(){
+    var list = state.visits;
+    var f = state.filters;
+    if(f.distrito) list = list.filter(function(v){ return v.distrito===f.distrito; });
+    if(f.impulsadora) list = list.filter(function(v){ return v.impulsadora===f.impulsadora; });
+    if(f.periodo === 'hoy'){
+      list = list.filter(function(v){ return isToday(v.ts); });
+    } else if(f.periodo === 'semana'){
+      var startOfWeek = new Date();
+      var day = startOfWeek.getDay(); // 0=domingo, 1=lunes...
+      var diffToMonday = (day===0 ? 6 : day-1);
+      startOfWeek.setDate(startOfWeek.getDate()-diffToMonday);
+      startOfWeek.setHours(0,0,0,0);
+      list = list.filter(function(v){ return v.ts && v.ts >= startOfWeek.getTime(); });
+    } else if(f.periodo === 'mes'){
+      var now = new Date();
+      var startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0,0,0,0);
+      list = list.filter(function(v){ return v.ts && v.ts >= startOfMonth.getTime(); });
+    }
+    return list;
+  }
+
+  function field(labelText, inputHtml){ return '<label>'+labelText+'</label>'+inputHtml; }
+  function input(type, name, value, placeholder){
+    var realType = (type==='digits') ? 'text' : type;
+    var inputmode = (type==='number') ? 'decimal' : (type==='digits' ? 'numeric' : 'text');
+    return '<input type="'+realType+'" data-field="'+name+'" value="'+escapeHtml(String(value))+'" placeholder="'+placeholder+'" inputmode="'+inputmode+'"'+(type==='digits'?' pattern="[0-9]*" data-numeric="1"':'')+'>';
+  }
+  function moneyField(labelText, name, digitsValue, placeholder){
+    var display = digitsValue ? Number(digitsValue).toLocaleString('es-CO') : '';
+    return '<label>'+labelText+'</label><div class="moneywrap"><span class="moneypre">$</span><input type="text" inputmode="numeric" data-money="'+name+'" value="'+escapeHtml(display)+'" placeholder="'+(placeholder||'0')+'"></div>';
+  }
+  function select(name, options, value, placeholder){
+    var html = '<select data-field="'+name+'">';
+    if(placeholder){
+      html += '<option value="" '+(!value?'selected':'')+' disabled>'+escapeHtml(placeholder)+'</option>';
+    }
+    options.forEach(function(o){ html += '<option value="'+escapeHtml(o)+'" '+(o===value?'selected':'')+'>'+escapeHtml(o)+'</option>'; });
+    html += '</select>';
+    return html;
+  }
+
+  function captureFocus(){
+    var active = document.activeElement;
+    if(!active) return null;
+    if(active.hasAttribute('data-field')){
+      // Los inputs type="number" no soportan selectionStart/selectionEnd en varios
+      // navegadores (lanzan error); en ese caso simplemente ubicamos el cursor al final.
+      try{
+        return {attr:'data-field', key:active.getAttribute('data-field'), start:active.selectionStart, end:active.selectionEnd};
+      }catch(e){
+        return {attr:'data-field', key:active.getAttribute('data-field'), end:true};
+      }
+    }
+    if(active.hasAttribute('data-money')) return {attr:'data-money', key:active.getAttribute('data-money'), end:true};
+    if(active.id === 'obs') return {attr:'id', key:'obs', start:active.selectionStart, end:active.selectionEnd};
+    return null;
+  }
+  function restoreFocus(info){
+    if(!info) return;
+    var el = info.attr==='id' ? document.getElementById(info.key) : root.querySelector('['+info.attr+'="'+info.key+'"]');
+    if(!el) return;
+    el.focus();
+    try{
+      if(info.end === true || typeof info.start !== 'number'){
+        var len = el.value.length;
+        el.setSelectionRange(len, len);
+      } else {
+        el.setSelectionRange(info.start, info.end);
+      }
+    }catch(e){ /* algunos navegadores no soportan setSelectionRange en type=number, se ignora */ }
+  }
+
+  function render(){
+    var focusInfo = captureFocus();
+    var f = state.form;
+    var pctPpto = currentPctPpto();
+
+    var html = '';
+    html += '<div class="eyebrow">Panificadora &middot; Visitas a punto de venta</div>';
+    html += '<div class="brandrow"><h1>Registro de Visita</h1></div>';
+    html += '<p class="sub">Formulario completo, igual al de siempre — solo que ahora sin límite de usuarios.</p>';
+
+    html += '<div class="tabs">';
+    html += '<div class="tab '+(state.tab==='form'?'active':'')+'" data-tab="form">Registrar</div>';
+    html += '<div class="tab '+(state.tab==='summary'?'active':'')+'" data-tab="summary">Resumen</div>';
+    html += '</div>';
+
+    if(state.error) html += '<div class="err">'+state.error+'</div>';
+
+    if(state.loading){
+      html += '<div class="loading">Cargando datos guardados…</div>';
+      root.innerHTML = html; bindTabs(); return;
+    }
+
+    if(state.tab === 'form'){
+      html += '<form id="visitForm">';
+
+      if(state.draftRestoredAt){
+        html += '<div class="editbanner">🔄 Recuperamos el formulario que estabas llenando (se cerró antes de guardar) &middot; <span data-discard-draft>Empezar de nuevo</span></div>';
+      }
+
+      if(state.editingId){
+        html += '<div class="editbanner">✏️ Editando una visita guardada &middot; <span data-cancel-edit>Cancelar</span></div>';
+      } else if(f.impulsadora){
+        var misVisitas = state.visits.filter(function(v){ return v.impulsadora===f.impulsadora && isToday(v.ts); }).slice(0,5);
+        if(misVisitas.length){
+          html += '<div class="card"><div class="card-title">Tus visitas de hoy</div><div class="card-hint">Solo puedes editar visitas del día actual.</div>';
+          misVisitas.forEach(function(v){
+            html += '<div class="rowcard">';
+            html += '<div><div class="name">'+escapeHtml(v.tienda)+'</div><div class="meta">'+v.hora+' &middot; '+fmtMoney(v.ventaAcumDinero)+'</div></div>';
+            html += '<button type="button" class="editbtn" data-edit-visit="'+v.id+'">✏️ Editar</button>';
+            html += '</div>';
+          });
+          html += '</div>';
+        }
+      }
+
+      html += '<div class="card"><div class="card-title">Quién y dónde</div>';
+      html += field('Nombre de quien realiza la visita', select('impulsadora', COMERCIALES, f.impulsadora, 'Selecciona tu nombre'));
+      html += field('Distrito', select('distrito', DISTRITOS, f.distrito));
+      var tiendasDelDistrito = TIENDAS_POR_DISTRITO[f.distrito] || [];
+      html += field('Centro / Nombre de la tienda', select('tienda', tiendasDelDistrito, f.tienda, 'Selecciona la tienda'));
+      html += field('Nombre director de la tienda', input('text','director',f.director,''));
+      html += field('Nombre quien recibe la visita', input('text','recibe',f.recibe,''));
+      html += field('Localización / dirección', input('text','localizacion',f.localizacion,'Ej: Cl. 93 #45B-90, Barranquilla'));
+      html += '<div class="locbtn" id="locBtn">📍 Usar mi ubicación actual (GPS)</div>';
+      if(state.locStatus === 'ok' && f.lat){
+        var d = 0.0025;
+        var bbox = (f.lng-d)+','+(f.lat-d)+','+(f.lng+d)+','+(f.lat+d);
+        var mapSrc = 'https://www.openstreetmap.org/export/embed.html?bbox='+bbox+'&marker='+f.lat+','+f.lng;
+        html += '<div class="locresult show">📍 '+f.lat.toFixed(5)+', '+f.lng.toFixed(5)+' &middot; <a href="https://maps.google.com/?q='+f.lat+','+f.lng+'" target="_blank">abrir en Google Maps</a></div>';
+        if(state.geoStatus === 'buscando'){
+          html += '<div class="locresult show">Buscando la dirección...</div>';
+        }
+        html += '<iframe src="'+mapSrc+'" style="width:100%; height:190px; border:1px solid var(--line); border-radius:10px; margin-top:8px;" loading="lazy"></iframe>';
+      } else if(state.locStatus && state.locStatus !== 'ok'){
+        html += '<div class="locresult show" style="color:var(--burgundy)">'+state.locStatus+'</div>';
+      }
+      html += '</div>';
+
+      html += '<div class="card"><div class="card-title">Ventas del mes</div>';
+      html += moneyField('Meta del mes $', 'metaDinero', f.metaDinero, '0');
+      html += '<div class="grid2">';
+      html += moneyField('Venta de Panadería', 'ventaPanaderia', f.ventaPanaderia, '0');
+      html += moneyField('Venta de Repostería', 'ventaReposteria', f.ventaReposteria, '0');
+      html += '</div>';
+      html += '<label>¿Tiene vitrina de hojaldre?</label>';
+      html += '<div class="segbtns">';
+      html += '<div class="segbtn '+(f.tieneVitrinaHojaldre===true?'on-good':'')+'" data-sino2="tieneVitrinaHojaldre" data-val="true">Sí</div>';
+      html += '<div class="segbtn '+(f.tieneVitrinaHojaldre===false?'on-bad':'')+'" data-sino2="tieneVitrinaHojaldre" data-val="false">No</div>';
+      html += '</div>';
+      if(f.tieneVitrinaHojaldre===true){
+        html += moneyField('Venta de Hojaldres', 'ventaHojaldres', f.ventaHojaldres, '0');
+      }
+      var sumaCategorias = (Number(f.ventaPanaderia)||0) + (Number(f.ventaReposteria)||0) + (f.tieneVitrinaHojaldre===true ? (Number(f.ventaHojaldres)||0) : 0);
+      html += '<div class="pctpreview">Venta acumulada (suma de categorías): <b>'+fmtMoney(sumaCategorias)+'</b></div>';
+      if(pctPpto !== null) html += '<div class="pctpreview">Cumplimiento ppto: <b>'+fmtPct(pctPpto)+'</b></div>';
+      html += '</div>';
+
+      html += '<div class="card"><div class="card-title">Revisión Comercial</div><div class="card-hint">Califica cada punto como Buena, Regular o Mala.</div>';
+      TRIPLE_ITEMS.forEach(function(item){
+        if(item.key==='vitrina' && f.tieneVitrinaHojaldre!==true) return;
+        var val = f.triple[item.key];
+        html += '<label>'+item.label+'</label>';
+        html += '<div class="segbtns">';
+        html += '<div class="segbtn '+(val==='buena'?'on-good':'')+'" data-triple="'+item.key+'" data-val="buena">Buena</div>';
+        html += '<div class="segbtn '+(val==='regular'?'on-mid':'')+'" data-triple="'+item.key+'" data-val="regular">Regular</div>';
+        html += '<div class="segbtn '+(val==='mala'?'on-bad':'')+'" data-triple="'+item.key+'" data-val="mala">Mala</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+
+      html += '<div class="card"><div class="card-title">Calidad y disponibilidad</div>';
+      SINO_ITEMS.forEach(function(item){
+        var val = f.sino[item.key];
+        html += '<label>'+item.label+'</label>';
+        html += '<div class="segbtns">';
+        html += '<div class="segbtn '+(val===true?'on-good':'')+'" data-sino="'+item.key+'" data-val="true">Sí</div>';
+        html += '<div class="segbtn '+(val===false?'on-bad':'')+'" data-sino="'+item.key+'" data-val="false">No</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+
+      html += '<div class="card"><div class="card-title">Canastillas</div>';
+      html += '<label>¿Tiene canastillas para recoger?</label>';
+      html += '<div class="segbtns">';
+      html += '<div class="segbtn '+(f.tieneCanastillas===true?'on-good':'')+'" data-sino2="tieneCanastillas" data-val="true">Sí</div>';
+      html += '<div class="segbtn '+(f.tieneCanastillas===false?'on-bad':'')+'" data-sino2="tieneCanastillas" data-val="false">No</div>';
+      html += '</div>';
+      if(f.tieneCanastillas===true){
+        html += '<div class="grid2">';
+        html += field('Canastillas de Panadería', input('digits','canastillasPanaderia',f.canastillasPanaderia,'0'));
+        html += field('Canastillas de Repostería', input('digits','canastillasReposteria',f.canastillasReposteria,'0'));
+        html += '</div>';
+      }
+      html += '</div>';
+
+      html += '<div class="card"><div class="card-title">📷 Tus fotos antes de la intervención</div><div class="card-hint">Obligatorio: Bombazos, Exhibición general y Precios Rojos. Vitrina solo si tu tienda cuenta con ella.</div>';
+      html += '<div class="photogrid">';
+      PHOTO_SLOTS_ANTES.forEach(function(slot){
+        var has = f.fotos[slot.key];
+        var esOpcional = slot.key==='vitrina_antes' && f.tieneVitrinaHojaldre!==true;
+        var procesando = f.fotoProcesando === slot.key;
+        html += '<div class="photoslot '+(has?'filled':'')+'">';
+        html += '<input type="file" accept="image/*" data-photo="'+slot.key+'" '+(procesando?'disabled':'')+'>';
+        if(procesando){
+          html += '<div class="plus">⏳</div>';
+        } else if(has){
+          html += '<img src="'+has+'">';
+        } else {
+          html += '<div class="plus">＋</div>';
+        }
+        html += '<div class="lbl">'+(procesando?'Procesando...':slot.label+(esOpcional?' (opcional)':''))+'</div>';
+        html += '</div>';
+      });
+      html += '</div></div>';
+
+      html += '<div class="card"><div class="card-title">🌟 Tus fotos después de tu gran intervención</div><div class="card-hint">Obligatorio: Bombazos, Exhibición general y Precios Rojos. Vitrina solo si tu tienda cuenta con ella.</div>';
+      html += '<div class="photogrid">';
+      PHOTO_SLOTS_DESPUES.forEach(function(slot){
+        var has = f.fotos[slot.key];
+        var esOpcional = slot.key==='vitrina_despues' && f.tieneVitrinaHojaldre!==true;
+        var procesando = f.fotoProcesando === slot.key;
+        html += '<div class="photoslot '+(has?'filled':'')+'">';
+        html += '<input type="file" accept="image/*" data-photo="'+slot.key+'" '+(procesando?'disabled':'')+'>';
+        if(procesando){
+          html += '<div class="plus">⏳</div>';
+        } else if(has){
+          html += '<img src="'+has+'">';
+        } else {
+          html += '<div class="plus">＋</div>';
+        }
+        html += '<div class="lbl">'+(procesando?'Procesando...':slot.label+(esOpcional?' (opcional)':''))+'</div>';
+        html += '</div>';
+      });
+      html += '</div></div>';
+
+      html += '<div class="card"><div class="card-title">Observaciones</div>';
+      html += '<textarea id="obs" placeholder="Novedades, incidencias, comentarios...">'+escapeHtml(f.obs)+'</textarea>';
+      html += '</div>';
+
+      html += '<div class="submitbar"><button class="primary" type="submit" '+(validForm()?'':'disabled')+'>'+(state.submitting?'Guardando...':(state.editingId?'Actualizar visita':'Guardar visita'))+'</button></div>';
+      if(!validForm() && !state.submitting){
+        var faltantes = [];
+        if(!f.impulsadora.trim()) faltantes.push('tu nombre');
+        if(!f.tienda.trim()) faltantes.push('la tienda');
+        var fotosFaltantes = requiredPhotoSlots(f).filter(function(slot){ return !(f.fotos && f.fotos[slot.key]); });
+        if(fotosFaltantes.length){
+          var faltAntes = fotosFaltantes.filter(function(s){ return s.key.indexOf('_antes')>-1; }).length;
+          var faltDespues = fotosFaltantes.filter(function(s){ return s.key.indexOf('_despues')>-1; }).length;
+          var partes = [];
+          if(faltAntes) partes.push(faltAntes+' foto(s) de "antes"');
+          if(faltDespues) partes.push(faltDespues+' foto(s) de "después"');
+          faltantes.push(partes.join(' y '));
+        }
+        if(faltantes.length) html += '<div class="locresult show" style="color:var(--burgundy); text-align:center;">Falta: '+faltantes.join(', ')+'</div>';
+      }
+      if(state.editingId){
+        html += '<div class="submitbar" style="margin-top:-6px;"><button type="button" class="ghostbtn" data-cancel-edit>Cancelar edición</button></div>';
+      }
+      html += '</form>';
+
+    } else {
+      var fVisits = filteredVisits();
+      var totalVentas = fVisits.reduce(function(s,v){return s+v.ventaAcumDinero;},0);
+      var totalMeta = fVisits.reduce(function(s,v){return s+v.metaDinero;},0);
+      var pctGlobal = totalMeta ? totalVentas/totalMeta : null;
+
+      html += '<div class="chiprow">';
+      PERIODOS.forEach(function(p){
+        html += '<div class="chip '+(state.filters.periodo===p.key?'active':'')+'" data-periodo="'+p.key+'">'+p.label+'</div>';
+      });
+      html += '<select class="chipselect" data-filterselect="distrito">';
+      html += '<option value="">Distrito (todos)</option>';
+      DISTRITOS.forEach(function(d){ html += '<option value="'+escapeHtml(d)+'" '+(state.filters.distrito===d?'selected':'')+'>'+escapeHtml(d)+'</option>'; });
+      html += '</select>';
+      html += '<select class="chipselect" data-filterselect="impulsadora">';
+      html += '<option value="">Comercial (todas)</option>';
+      COMERCIALES.forEach(function(c){ html += '<option value="'+escapeHtml(c)+'" '+(state.filters.impulsadora===c?'selected':'')+'>'+escapeHtml(c)+'</option>'; });
+      html += '</select>';
+      html += '</div>';
+
+      html += '<div class="statgrid">';
+      html += '<div class="stat"><div class="num">'+fVisits.length+'</div><div class="lbl">Visitas registradas</div></div>';
+      html += '<div class="stat"><div class="num">'+(pctGlobal!==null?fmtPct(pctGlobal):'—')+'</div><div class="lbl">Cumplimiento global</div></div>';
+      html += '</div>';
+
+      html += '<div class="submitbar"><button class="primary" type="button" id="exportBtn" '+(state.visits.length===0?'disabled':'')+'>⬇️ Exportar a Excel</button></div>';
+
+      var alerts = fVisits.map(function(v){ var r = countRedFlags(v); return {v:v, flags:r}; })
+        .filter(function(x){ return x.flags.count>=2; })
+        .sort(function(a,b){ return b.flags.count-a.flags.count || b.v.ts-a.v.ts; })
+        .slice(0,5);
+      html += '<div class="card"><div class="card-title">⚠️ Alertas de calidad</div><div class="card-hint">Visitas con 2 o más puntos en rojo del checklist.</div>';
+      if(alerts.length===0){
+        html += '<div class="empty">Sin alertas en este filtro. 🎉</div>';
+      } else {
+        alerts.forEach(function(a){
+          html += '<div class="alertrow">';
+          html += '<div><div class="name">'+escapeHtml(a.v.tienda)+' &middot; '+escapeHtml(a.v.impulsadora)+'</div><div class="detail">'+a.flags.labels.map(escapeHtml).join(', ')+'</div></div>';
+          html += '<div class="alertbadge">'+a.flags.count+'</div>';
+          html += '</div>';
+        });
+      }
+      html += '</div>';
+
+      var byImp = aggregateByImpulsadora(fVisits);
+      html += '<div class="card"><div class="card-title">Ranking por impulsadora</div>';
+      if(byImp.length===0){
+        html += '<div class="empty"><div class="glyph">🥐</div>Aún no hay visitas registradas.<br>Ve a la pestaña "Registrar" para empezar.</div>';
+      } else {
+        byImp.forEach(function(row, idx){
+          var p = row.meta ? row.venta/row.meta : null;
+          var medalClass = 'mid';
+          var medalLabel = String(idx+1);
+          if(idx===0) medalClass = 'gold';
+          else if(idx===1) medalClass = 'silver';
+          else if(p!==null && p<0.7) medalClass = 'low';
+          html += '<div class="rowcard">';
+          html += '<div style="display:flex; align-items:center; gap:10px;"><div class="medal '+medalClass+'">'+medalLabel+'</div><div><div class="name">'+escapeHtml(row.name)+'</div><div class="meta">'+row.count+' visita(s) &middot; '+fmtMoney(row.venta)+'</div></div></div>';
+          html += '<div class="pill '+(p!==null?pctClass(p):'mid')+'">'+(p!==null?fmtPct(p):'s/meta')+'</div>';
+          html += '</div>';
+        });
+      }
+      html += '</div>';
+
+      var lineas = [
+        {label:'Panadería', total: fVisits.reduce(function(s,v){return s+(v.ventaPanaderia||0);},0)},
+        {label:'Repostería', total: fVisits.reduce(function(s,v){return s+(v.ventaReposteria||0);},0)},
+        {label:'Hojaldre', total: fVisits.reduce(function(s,v){return s+(v.tieneVitrinaHojaldre===true?(v.ventaHojaldres||0):0);},0)}
+      ];
+      var maxLinea = Math.max.apply(null, lineas.map(function(l){return l.total;}).concat([1]));
+      html += '<div class="card"><div class="card-title">Venta por línea</div>';
+      lineas.forEach(function(l){
+        var w = Math.round((l.total/maxLinea)*100);
+        html += '<div class="barrow"><div class="barlbl"><span>'+l.label+'</span><span>'+fmtMoney(l.total)+'</span></div><div class="bartrack"><div class="barfill" style="width:'+w+'%"></div></div></div>';
+      });
+      html += '</div>';
+
+      var byTienda = aggregateByTienda(fVisits);
+      var conMeta = byTienda.filter(function(t){ return t.meta>0; });
+      var mejores = conMeta.slice().sort(function(a,b){ return (b.venta/b.meta)-(a.venta/a.meta); }).slice(0,5);
+      var peores = conMeta.slice().sort(function(a,b){ return (a.venta/a.meta)-(b.venta/b.meta); }).slice(0,5);
+
+      html += '<div class="card"><div class="card-title">🏆 Tiendas con mejor cumplimiento</div>';
+      if(mejores.length===0){
+        html += '<div class="empty">Sin datos suficientes en este filtro.</div>';
+      } else {
+        mejores.forEach(function(t){
+          var p = t.venta/t.meta;
+          html += '<div class="rowcard">';
+          html += '<div><div class="name">'+escapeHtml(t.name)+'</div><div class="meta">'+t.count+' visita(s) &middot; '+fmtMoney(t.venta)+'</div></div>';
+          html += '<div class="pill '+pctClass(p)+'">'+fmtPct(p)+'</div>';
+          html += '</div>';
+        });
+      }
+      html += '</div>';
+
+      html += '<div class="card"><div class="card-title">🔻 Tiendas con peor cumplimiento</div>';
+      if(peores.length===0){
+        html += '<div class="empty">Sin datos suficientes en este filtro.</div>';
+      } else {
+        peores.forEach(function(t){
+          var p = t.venta/t.meta;
+          html += '<div class="rowcard">';
+          html += '<div><div class="name">'+escapeHtml(t.name)+'</div><div class="meta">'+t.count+' visita(s) &middot; '+fmtMoney(t.venta)+'</div></div>';
+          html += '<div class="pill '+pctClass(p)+'">'+fmtPct(p)+'</div>';
+          html += '</div>';
+        });
+      }
+      html += '</div>';
+    }
+
+    html += '<div class="stampwrap '+(state.showStamp?'show':'')+'"><div class="stamp"><span class="big">¡Registrada!</span><span class="small">Gracias por tu visita</span></div></div>';
+
+    root.innerHTML = html;
+    bindAll();
+    restoreFocus(focusInfo);
+    scheduleDraftSave();
+  }
+
+  function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+  function detailRow(label, value){ return '<div class="drow"><span>'+label+'</span><span>'+value+'</span></div>'; }
+
+  function bindTabs(){
+    document.querySelectorAll('.tab').forEach(function(el){
+      el.addEventListener('click', function(){ state.tab = el.getAttribute('data-tab'); render(); });
+    });
+    document.querySelectorAll('[data-periodo]').forEach(function(el){
+      el.addEventListener('click', function(){ state.filters.periodo = el.getAttribute('data-periodo'); render(); });
+    });
+    document.querySelectorAll('[data-filterselect]').forEach(function(el){
+      el.addEventListener('change', function(){ state.filters[el.getAttribute('data-filterselect')] = el.value; render(); });
+    });
+    document.querySelectorAll('[data-edit-visit]').forEach(function(el){
+      el.addEventListener('click', function(){ startEdit(el.getAttribute('data-edit-visit')); });
+    });
+    document.querySelectorAll('[data-cancel-edit]').forEach(function(el){
+      el.addEventListener('click', function(){ cancelEdit(); });
+    });
+    document.querySelectorAll('[data-discard-draft]').forEach(function(el){
+      el.addEventListener('click', function(){
+        clearDraft();
+        state.draftRestoredAt = null;
+        state.form = emptyForm();
+        render();
+      });
+    });
+  }
+
+  function bindAll(){
+    bindTabs();
+    document.querySelectorAll('[data-field]').forEach(function(el){
+      el.addEventListener('input', function(){
+        if(el.hasAttribute('data-numeric')){
+          var clean = el.value.replace(/[^0-9]/g,'');
+          if(clean !== el.value) el.value = clean;
+          updateForm(el.getAttribute('data-field'), clean);
+        } else {
+          updateForm(el.getAttribute('data-field'), el.value);
+        }
+      });
+      el.addEventListener('change', function(){ updateForm(el.getAttribute('data-field'), el.value); });
+    });
+    document.querySelectorAll('[data-triple]').forEach(function(el){
+      el.addEventListener('click', function(){
+        var key = el.getAttribute('data-triple'); var val = el.getAttribute('data-val');
+        var current = state.form.triple[key];
+        updateTriple(key, current===val ? null : val);
+      });
+    });
+    document.querySelectorAll('[data-sino]').forEach(function(el){
+      el.addEventListener('click', function(){
+        var key = el.getAttribute('data-sino'); var val = el.getAttribute('data-val')==='true';
+        var current = state.form.sino[key];
+        updateSino(key, current===val ? null : val);
+      });
+    });
+    document.querySelectorAll('[data-sino2]').forEach(function(el){
+      el.addEventListener('click', function(){
+        var key = el.getAttribute('data-sino2'); var val = el.getAttribute('data-val')==='true';
+        var current = state.form[key];
+        updateForm(key, current===val ? null : val);
+      });
+    });
+    document.querySelectorAll('[data-money]').forEach(function(el){
+      el.addEventListener('input', function(){
+        var digits = el.value.replace(/\D/g,'');
+        state.form[el.getAttribute('data-money')] = digits;
+        render();
+      });
+    });
+    document.querySelectorAll('[data-photo]').forEach(function(el){
+      el.addEventListener('change', function(){ handlePhoto(el.getAttribute('data-photo'), el); });
+    });
+    document.querySelectorAll('[data-expand]').forEach(function(el){
+      el.addEventListener('click', function(){
+        var id = el.getAttribute('data-expand');
+        state.expanded[id] = !state.expanded[id];
+        render();
+      });
+    });
+    var locBtn = document.getElementById('locBtn');
+    if(locBtn) locBtn.addEventListener('click', function(){
+      try{ useLocation(); }
+      catch(e){ state.locStatus = 'Error inesperado: '+e.message; render(); }
+    });
+    var formEl = document.getElementById('visitForm');
+    if(formEl) formEl.addEventListener('submit', submitVisit);
+    var exportBtn = document.getElementById('exportBtn');
+    if(exportBtn) exportBtn.addEventListener('click', exportToExcel);
+  }
+
+  // ======================================================================
+  // EXPORTAR A EXCEL
+  // Genera un archivo .xlsx real (usando la librería SheetJS) con todas
+  // las visitas cargadas, en columnas legibles. No modifica ni afecta el
+  // guardado en Google Sheets — es solo una copia para descargar.
+  // ======================================================================
+  function boolLabel(v){ return v===true?'Sí':(v===false?'No':''); }
+  function tripleLabel(v){ return v?cap(v):''; }
+
+  function exportToExcel(){
+    if(typeof XLSX === 'undefined'){
+      alert('No se pudo cargar el componente de Excel. Revisa tu conexión a internet e intenta de nuevo.');
+      return;
+    }
+    var visits = state.visits.slice().sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
+
+    var headers = [
+      'Fecha','Hora','Impulsadora','Tienda','Director tienda','Distrito','Recibió la visita','Localización',
+      'Meta $','Venta acumulada $','Cumplimiento %','Venta Panadería $','Venta Repostería $',
+      '¿Vitrina hojaldre?','Venta Hojaldres $',
+      'POP','Material manual','Vitrina','Portafolio',
+      'Agotados','Limpieza','Rotación','Rotulado','Almacenamiento',
+      '¿Tiene canastillas?','Canastillas Panadería','Canastillas Repostería','Observaciones'
+    ];
+
+    var rows = visits.map(function(v){
+      var pct = v.metaDinero ? (v.ventaAcumDinero / v.metaDinero) : null;
+      return [
+        v.fecha||'', v.hora||'', v.impulsadora||'', v.tienda||'', v.director||'', v.distrito||'', v.recibe||'', v.localizacion||'',
+        v.metaDinero||0, v.ventaAcumDinero||0, (pct!==null ? Math.round(pct*1000)/10 : ''), v.ventaPanaderia||0, v.ventaReposteria||0,
+        boolLabel(v.tieneVitrinaHojaldre), (v.tieneVitrinaHojaldre===true ? (v.ventaHojaldres||0) : ''),
+        tripleLabel(v.triple.pop), tripleLabel(v.triple.manual), tripleLabel(v.triple.vitrina), tripleLabel(v.triple.portafolio),
+        boolLabel(v.sino.agotados), boolLabel(v.sino.limpieza), boolLabel(v.sino.rotacion), boolLabel(v.sino.rotulado), boolLabel(v.sino.almacenamiento),
+        boolLabel(v.tieneCanastillas), (v.tieneCanastillas===true ? (v.canastillasPanaderia||0) : ''), (v.tieneCanastillas===true ? (v.canastillasReposteria||0) : ''),
+        v.obs||''
+      ];
+    });
+
+    var ws = XLSX.utils.aoa_to_sheet([headers].concat(rows));
+    ws['!cols'] = headers.map(function(h){ return { wch: Math.max(h.length + 2, 14) }; });
+    ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s:{r:0,c:0}, e:{r:rows.length, c:headers.length-1} }) };
+
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Visitas');
+    var fecha = new Date().toISOString().slice(0,10);
+    XLSX.writeFile(wb, 'Visitas_Panificadora_'+fecha+'.xlsx');
+  }
+
+  var restoredDraft = loadDraft();
+  if(restoredDraft){
+    state.form = Object.assign(emptyForm(), restoredDraft.form);
+    state.draftRestoredAt = restoredDraft.savedAt;
+  }
+
+  render();
+  loadVisits();
+})();
+</script>
