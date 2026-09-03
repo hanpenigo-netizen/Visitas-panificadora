@@ -81,14 +81,20 @@
   .photogrid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
   .photoslot{
     border:1.5px dashed var(--line); border-radius:12px; background:var(--cream);
-    text-align:center; padding:10px; position:relative; overflow:hidden; min-height:96px;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:8px; position:relative; overflow:hidden; min-height:118px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px;
   }
-  .photoslot input{position:absolute; inset:0; opacity:0; cursor:pointer;}
-  .photoslot img{width:100%; height:76px; object-fit:cover; border-radius:8px;}
-  .photoslot .lbl{font-size:11px; color:var(--ink-soft); margin-top:4px; font-weight:600;}
+  .photoslot img{width:100%; height:64px; object-fit:cover; border-radius:8px;}
+  .photoslot .lbl{font-size:11px; color:var(--ink-soft); font-weight:600;}
   .photoslot .plus{font-size:20px; color:var(--wheat);}
   .photoslot.filled{border-style:solid; border-color:var(--sage);}
+  .phototabs{display:flex; gap:5px; width:100%;}
+  .phototab{
+    flex:1; display:flex; align-items:center; justify-content:center; gap:3px;
+    padding:5px 2px; border-radius:7px; background:var(--wheat-soft); color:var(--crust);
+    font-size:10.5px; font-weight:700; cursor:pointer; position:relative;
+  }
+  .phototab input{position:absolute; inset:0; opacity:0; cursor:pointer;}
 
   .submitbar{position:sticky; bottom:0; margin-top:10px;}
   button.primary{width:100%; padding:14px; border:none; border-radius:12px; background:var(--crust); color:#fff; font-family:'Inter',sans-serif; font-weight:700; font-size:15px; cursor:pointer; box-shadow:0 4px 14px rgba(91,58,33,.25);}
@@ -493,6 +499,27 @@
     reader.readAsDataURL(file);
   }
 
+  function renderPhotoSlot(slot, f){
+    var has = f.fotos[slot.key];
+    var esOpcional = (slot.key==='vitrina_antes' || slot.key==='vitrina_despues') && f.tieneVitrinaHojaldre!==true;
+    var procesando = f.fotoProcesando === slot.key;
+    var html = '<div class="photoslot '+(has?'filled':'')+'">';
+    if(procesando){
+      html += '<div class="plus">⏳</div>';
+    } else if(has){
+      html += '<img src="'+has+'">';
+    } else {
+      html += '<div class="plus">＋</div>';
+    }
+    html += '<div class="lbl">'+(procesando?'Procesando...':slot.label+(esOpcional?' (opcional)':''))+'</div>';
+    html += '<div class="phototabs">';
+    html += '<label class="phototab">📷 Cámara<input type="file" accept="image/*" capture="environment" data-photo="'+slot.key+'" '+(procesando?'disabled':'')+'></label>';
+    html += '<label class="phototab">🖼️ Galería<input type="file" accept="image/*" data-photo="'+slot.key+'" '+(procesando?'disabled':'')+'></label>';
+    html += '</div>';
+    html += '</div>';
+    return html;
+  }
+
   function handlePhoto(key, fileInput){
     var file = fileInput.files && fileInput.files[0];
     if(!file) return;
@@ -807,40 +834,14 @@
       html += '<div class="card"><div class="card-title">📷 Tus fotos antes de la intervención</div><div class="card-hint">Obligatorio: Bombazos, Exhibición general y Precios Rojos. Vitrina solo si tu tienda cuenta con ella.</div>';
       html += '<div class="photogrid">';
       PHOTO_SLOTS_ANTES.forEach(function(slot){
-        var has = f.fotos[slot.key];
-        var esOpcional = slot.key==='vitrina_antes' && f.tieneVitrinaHojaldre!==true;
-        var procesando = f.fotoProcesando === slot.key;
-        html += '<div class="photoslot '+(has?'filled':'')+'">';
-        html += '<input type="file" accept="image/*" data-photo="'+slot.key+'" '+(procesando?'disabled':'')+'>';
-        if(procesando){
-          html += '<div class="plus">⏳</div>';
-        } else if(has){
-          html += '<img src="'+has+'">';
-        } else {
-          html += '<div class="plus">＋</div>';
-        }
-        html += '<div class="lbl">'+(procesando?'Procesando...':slot.label+(esOpcional?' (opcional)':''))+'</div>';
-        html += '</div>';
+        html += renderPhotoSlot(slot, f);
       });
       html += '</div></div>';
 
       html += '<div class="card"><div class="card-title">🌟 Tus fotos después de tu gran intervención</div><div class="card-hint">Obligatorio: Bombazos, Exhibición general y Precios Rojos. Vitrina solo si tu tienda cuenta con ella.</div>';
       html += '<div class="photogrid">';
       PHOTO_SLOTS_DESPUES.forEach(function(slot){
-        var has = f.fotos[slot.key];
-        var esOpcional = slot.key==='vitrina_despues' && f.tieneVitrinaHojaldre!==true;
-        var procesando = f.fotoProcesando === slot.key;
-        html += '<div class="photoslot '+(has?'filled':'')+'">';
-        html += '<input type="file" accept="image/*" data-photo="'+slot.key+'" '+(procesando?'disabled':'')+'>';
-        if(procesando){
-          html += '<div class="plus">⏳</div>';
-        } else if(has){
-          html += '<img src="'+has+'">';
-        } else {
-          html += '<div class="plus">＋</div>';
-        }
-        html += '<div class="lbl">'+(procesando?'Procesando...':slot.label+(esOpcional?' (opcional)':''))+'</div>';
-        html += '</div>';
+        html += renderPhotoSlot(slot, f);
       });
       html += '</div></div>';
 
